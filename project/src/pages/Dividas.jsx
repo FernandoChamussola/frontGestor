@@ -21,9 +21,116 @@ import {
   FormLabel,
   Input,
   useToast,
+  Center,
+  VStack,
+  Text,
 } from '@chakra-ui/react'
 import { FiDownload } from 'react-icons/fi'
 import { getDividas, registrarPagamento, downloadPDF } from '../services/api'
+
+// Componente do anúncio em tela cheia
+const FullScreenAd = ({ isOpen, onClose, onAdComplete }) => {
+  const [adStatus, setAdStatus] = useState('Carregando anúncio...');
+  const [countdown, setCountdown] = useState(5);
+  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+
+  useEffect(() => {
+    if (isOpen) {
+      // Iniciar contagem regressiva
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Limpar timer
+      return () => clearInterval(timer);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      setTimeout(onAdComplete, 1000);
+    }
+  }, [countdown, onAdComplete]);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <ModalOverlay />
+      <ModalContent>
+        <Center minH="100vh" position="relative">
+          <Box
+            w="100%"
+            h="100vh"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            {isDevelopment ? (
+              // Placeholder para desenvolvimento
+              <VStack spacing={4}>
+                <Box
+                  w="80%"
+                  maxW="800px"
+                  h="400px"
+                  border="2px dashed"
+                  borderColor="blue.400"
+                  borderRadius="md"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexDirection="column"
+                  p={4}
+                >
+                  <Text fontSize="xl">📢 Anúncio em Tela Cheia</Text>
+                  <Text>Ambiente de desenvolvimento</Text>
+                  <Text mt={4}>Aguarde {countdown} segundos...</Text>
+                </Box>
+              </VStack>
+            ) : (
+              // Anúncio real para produção
+              <Box
+                w="80%"
+                maxW="800px"
+                h="400px"
+                position="relative"
+              >
+                <ins
+                  className="adsbygoogle"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: '100%',
+                  }}
+                  data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                  data-ad-slot="YYYYYYYYYYYY"
+                  data-ad-format="auto"
+                  data-full-width-responsive="true"
+                />
+                <Text 
+                  position="absolute" 
+                  bottom="4" 
+                  right="4" 
+                  bg="blackAlpha.700" 
+                  color="white" 
+                  px={3} 
+                  py={1} 
+                  borderRadius="md"
+                >
+                  {countdown}s
+                </Text>
+              </Box>
+            )}
+          </Box>
+        </Center>
+      </ModalContent>
+    </Modal>
+  );
+};
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-MZ', {
@@ -42,6 +149,11 @@ function Dividas() {
   const [valorPagamento, setValorPagamento] = useState('')
   const [loading, setLoading] = useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { 
+    isOpen: isAdOpen, 
+    onOpen: onAdOpen, 
+    onClose: onAdClose 
+  } = useDisclosure()
   const toast = useToast()
 
   const fetchDividas = async () => {
@@ -103,15 +215,22 @@ function Dividas() {
   }
 
   const handleDownloadPDF = async () => {
+    // Abrir o anúncio primeiro
+    onAdOpen();
+  }
+
+  const handleAdComplete = async () => {
+    // Fechar o anúncio e iniciar o download
+    onAdClose();
     try {
-      await downloadPDF()
+      await downloadPDF();
     } catch (error) {
       toast({
         title: 'Erro ao baixar PDF',
         status: 'error',
         duration: 3000,
         isClosable: true,
-      })
+      });
     }
   }
 
@@ -188,7 +307,7 @@ function Dividas() {
               mt={4}
               colorScheme="green"
               onClick={handlePagamento}
-              
+              isLoading={loading}
               w="full"
             >
               Confirmar Pagamento
@@ -196,6 +315,12 @@ function Dividas() {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      <FullScreenAd 
+        isOpen={isAdOpen} 
+        onClose={onAdClose}
+        onAdComplete={handleAdComplete}
+      />
     </Box>
   )
 }

@@ -1,13 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    
+    <!-- Meta tags for SEO and social sharing -->
+    <meta name="description" content="Gestor Agiota - Sistema de gestão de empréstimos" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Title -->
+    <title>Gestor Agiota</title>
+
+    <!-- Preconnect to required domains -->
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+    <link rel="preconnect" href="https://googleads.g.doubleclick.net" />
+    
+    <!-- AdSense script with error handling -->
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        // Ignore AdSense related errors in development
+        if (msg.includes('adsbygoogle') && window.location.hostname === 'localhost') {
+          return true;
+        }
+        return false;
+      };
+    </script>
+    
+    <!-- AdSense -->
+    <script 
+      async 
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+      crossorigin="anonymous"
+      onerror="this.onerror=null;this.parentElement.removeChild(this);"
+    ></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- AdSense initialization -->
+    <script>
+      (function() {
+        if (window.location.hostname === 'localhost') {
+          window.adsbygoogle = window.adsbygoogle || [];
+          window.adsbygoogle.push = function(ad) {
+            console.log('Ad push prevented in development');
+          };
+        }
+      })();
+    </script>
   </body>
 </html>

@@ -30,7 +30,7 @@ function Register() {
 
     try {
       await register(nome, email, senha,capitalTotal)
-      navigate('/')
+      navigate('/login')
     } catch (error) {
       toast({
         description: error.response?.data?.error || 'Ocorreu um erro ao criar sua conta',
