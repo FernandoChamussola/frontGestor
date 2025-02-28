@@ -63,7 +63,7 @@ export const updateCapital = async (capitalTotal) => {
     userId,
     capitalTotal
   }
-  const response = await api.post(`/api/usuarios/atualizar/capital`, data)
+  const response = await api.post(`/usuarios/atualizar/capital`, data)
   return response.data
 }
 
