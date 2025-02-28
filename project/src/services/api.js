@@ -57,4 +57,14 @@ export const downloadPDF = async () => {
   link.remove()
 }
 
+export const updateCapital = async (capitalTotal) => {
+  const userId = localStorage.getItem('userId')
+  const data = {
+    userId,
+    capitalTotal
+  }
+  const response = await api.post(`/api/usuarios/atualizar/capital`, data)
+  return response.data
+}
+
 export default api
