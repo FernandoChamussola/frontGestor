@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://gestor-agiota.onrender.com/api'
+   baseURL: 'https://gestor-agiota.onrender.com/api'
+  //baseURL: 'http://localhost:3000/api'
 })
 
 api.interceptors.request.use(config => {
@@ -15,6 +16,8 @@ api.interceptors.request.use(config => {
 export const login = async (email, senha) => {
   const response = await api.post('/auth/login', { email, senha })
   localStorage.setItem('token', response.data.token)
+  localStorage.setItem('userId', response.data.id)
+  
   return response.data
 }
 
@@ -64,6 +67,17 @@ export const updateCapital = async (capitalTotal) => {
     capitalTotal
   }
   const response = await api.post(`/usuarios/atualizar/capital`, data)
+  console.log(response.data.message)
+  return response.data
+}
+
+export const mensagemm = async (dados) => {
+  const data = {
+    nome : dados.nome,
+    email : dados.email,
+    mensagem : dados.mensagem
+  }
+  const response = await api.post('/mensagem', data)
   return response.data
 }
 

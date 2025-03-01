@@ -56,8 +56,8 @@ function Dashboard() {
   const handleUpdateCapital = async () => {
     try {
       setDisable(true)
-      setNewCapital(dashboard.capitalTotal + newCapital)
-      await updateCapital(newCapital)
+      const newCapitalTotal = parseFloat(dashboard.capitalTotal) + parseFloat(newCapital)
+      await updateCapital(newCapitalTotal.toFixed(2))
       setNewCapital(0)
       setDisable(false)
       window.location.reload()
@@ -110,8 +110,8 @@ function Dashboard() {
           <ModalCloseButton />
           <ModalBody>
             <FormControl>
-              <FormLabel>Valor(posetivo para adicionar , negativo para remover)</FormLabel>
-              <Input type="number" />
+              <FormLabel>Valor (positivo para adicionar, negativo para remover)</FormLabel>
+              <Input type="number" onChange={(e) => setNewCapital(e.target.value)}/>
             </FormControl>
           </ModalBody>
 
