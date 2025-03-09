@@ -24,6 +24,7 @@ import {
   Center,
   VStack,
   Text,
+  Select,
 } from '@chakra-ui/react'
 import { FiDownload } from 'react-icons/fi'
 import { getDividas, registrarPagamento, downloadPDF } from '../services/api'
@@ -87,7 +88,7 @@ const FullScreenAd = ({ isOpen, onClose, onAdComplete }) => {
                   flexDirection="column"
                   p={4}
                 >
-                  <Text fontSize="xl">📢 Anúncio em Tela Cheia</Text>
+                  <Text fontSize="xl">Anúncio em Tela Cheia</Text>
                   <Text>Ambiente de desenvolvimento</Text>
                   <Text mt={4}>Aguarde {countdown} segundos...</Text>
                 </Box>
@@ -149,6 +150,7 @@ function Dividas() {
   const [selectedDivida, setSelectedDivida] = useState(null)
   const [valorPagamento, setValorPagamento] = useState('')
   const [loading, setLoading] = useState(false)
+  const [filtro, setFiltro] = useState('')
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { 
     isOpen: isAdOpen, 
@@ -251,6 +253,14 @@ function Dividas() {
         </Button>
       </HStack>
 
+      <Box mb={6}>
+        <Select value={filtro} onChange={e => setFiltro(e.target.value)}>
+          <option value="">Todas</option>
+          <option value="quitadas">Quitadas</option>
+          <option value="ativas">Ativas</option>
+        </Select>
+      </Box>
+
       <Table variant="simple">
         <Thead>
           <Tr>
@@ -264,7 +274,12 @@ function Dividas() {
           </Tr>
         </Thead>
         <Tbody>
-          {dividas.map((divida) => (
+          {dividas.filter(divida => {
+            if (filtro === '') return true
+            if (filtro === 'quitadas') return divida.status === 'Quitada'
+            if (filtro === 'ativas') return divida.status === 'Ativa'
+            return false
+          }).map((divida) => (
             <Tr key={divida.id}>
               <Td>{divida.devedor.nome}</Td>
               <Td>{formatCurrency(divida.valorInicial)}</Td>
@@ -310,39 +325,3 @@ function Dividas() {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Registrar Pagamento</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>Valor do Pagamento</FormLabel>
-              <Input
-                type="number"
-                value={valorPagamento}
-                onChange={(e) => setValorPagamento(e.target.value)}
-                placeholder="0,00"
-              />
-            </FormControl>
-
-            <Button
-              mt={4}
-              colorScheme="green"
-              onClick={handlePagamento}
-              isLoading={loading}
-              w="full"
-            >
-              Confirmar Pagamento
-            </Button>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <FullScreenAd 
-        isOpen={isAdOpen} 
-        onClose={onAdClose}
-        onAdComplete={handleAdComplete}
-      />
-    </Box>
-  )
-}
-
-export default Dividas
