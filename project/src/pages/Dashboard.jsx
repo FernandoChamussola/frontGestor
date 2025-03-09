@@ -20,23 +20,30 @@ import {
   FormLabel,
   Input,
   useToast,
+  useDisclosure,
+  Alert,
+  AlertIcon,
+  AlertTitle,
 } from '@chakra-ui/react'
-import { getDashboard , updateCapital } from '../services/api'
-import { useDisclosure } from '@chakra-ui/react'
+import { getDashboard , updateCapital, deleteUser } from '../services/api'
+import { useNavigate } from 'react-router-dom'
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat('pt-MZ', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'MTS'
   }).format(value)
 }
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure()
   const bgColor = useColorModeValue('white', 'gray.700')
   const [newCapital, setNewCapital] = useState(0)
   const [disable , setDisable] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -67,6 +74,16 @@ function Dashboard() {
       console.error('Erro ao atualizar capital:', error)
     }
   }
+
+  const handleDeleteAll = async () => {
+    try {
+      await deleteUser()
+      navigate('/login')
+    } catch (error) {
+      console.error('Erro ao deletar todos os dados:', error)
+    }
+  }
+
   if (!dashboard) return null
 
   return (
@@ -123,6 +140,36 @@ function Dashboard() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Modal isOpen={isOpenDelete} onClose={onCloseDelete}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Reiniciar Sistema</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Alert status="warning" variant="subtle" flexDirection="column" alignItems="center" justifyContent="center" textAlign="center" mb={5}>
+              <AlertIcon />
+              <AlertTitle>Atenção!</AlertTitle>
+              Essa ação vai deletar todos os dados do sistema, incluindo empréstimos e usuários.
+            </Alert>
+            <FormControl>
+              <FormLabel>Você tem certeza que deseja continuar?</FormLabel>
+              <Button colorScheme="red" onClick={() => setDeleteConfirm(true)}>Sim, deletar tudo</Button>
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" onClick={onCloseDelete}>
+              Cancelar
+            </Button>
+            {deleteConfirm && (
+              <Button colorScheme="red" onClick={() => handleDeleteAll()}>Deletar</Button>
+            )}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Button mt={4} colorScheme="red" onClick={onOpenDelete}>Reiniciar Sistema</Button>
     </Box>
   )
 }

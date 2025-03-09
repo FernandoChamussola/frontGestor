@@ -32,6 +32,12 @@ export const getDividas = async () => {
   return response.data
 }
 
+export const getDividaDetalhes = async (id) => {
+ // const usuarioId = localStorage.getItem('userId')
+  const response = await api.get(`/dividas/detalhes/${id}`)
+  return response.data
+}
+
 export const createDivida = async (data) => {
   const response = await api.post('/dividas', data)
   return response.data
@@ -81,4 +87,24 @@ export const mensagemm = async (dados) => {
   return response.data
 }
 
+export const deleteUser = async () => {
+  const id = localStorage.getItem('userId')
+  try {
+    const usuario = await api.put(`/usuarios/${id}/reiniciar`)
+    if (usuario.status === 404) {
+      return { error: 'Usuário não encontrado' }
+    }
+
+    return { message: 'Usuário e suas informações apagados com sucesso' }
+  } catch (error) {
+    return { error: 'Erro ao apagar usuário' }
+  }
+}
+
+export const updateDivida = async (id, data) => {
+  const response = await api.put(`/dividas/${id}`, data)
+  return response.data
+}
+
 export default api
+

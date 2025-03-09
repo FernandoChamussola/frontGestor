@@ -1,74 +1,8 @@
 import React from 'react';
-import { Box, Flex, IconButton, useColorMode, VStack, Heading, Button, Text, useDisclosure } from '@chakra-ui/react';
-import { FiSun, FiMoon, FiHome, FiDollarSign, FiPlusCircle, FiLogOut, FiMenu } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router-dom';
+import { Box, Flex, IconButton, useColorMode, VStack, Heading, Button, Link, useDisclosure } from '@chakra-ui/react';
+import { FiSun, FiMoon, FiMenu, FiLogOut, FiHome, FiDollarSign, FiPlusCircle } from 'react-icons/fi';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
-const TestAd = ({ position }) => {
-  const { colorMode } = useColorMode();
-  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
-
-  if (isDevelopment) {
-    return (
-      <Box
-        className={`ad-space-${position}`}
-        w="100%"
-        minH={position === 'sidebar' ? "250px" : "100px"}
-        my={2}
-        border="2px dashed"
-        borderColor={position === 'sidebar' ? 'blue.400' : 'green.400'}
-        borderRadius="md"
-        bg={colorMode === 'light' ? 'gray.50' : 'gray.700'}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        flexDirection="column"
-        p={4}
-      >
-        <Text 
-          fontSize="sm" 
-          color={colorMode === 'light' ? 'gray.600' : 'gray.200'}
-          textAlign="center"
-        >
-          📢 {position === 'sidebar' ? 'Anúncio Lateral' : 'Anúncio Inferior'}
-        </Text>
-        <Text 
-          fontSize="xs" 
-          color={colorMode === 'light' ? 'gray.500' : 'gray.300'}
-          mt={1}
-        >
-          Espaço reservado para anúncio (Ambiente de desenvolvimento)
-        </Text>
-      </Box>
-    );
-  }
-
-  // Production ad code
-  return (
-    <Box
-      className={`ad-space-${position}`}
-      w="100%"
-      minH={position === 'sidebar' ? "250px" : "100px"}
-      my={2}
-      position="relative"
-      overflow="hidden"
-    >
-      <ins
-        className="adsbygoogle"
-        style={{
-          display: 'block',
-          width: '100%',
-          height: '100%',
-        }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-        data-ad-slot="YYYYYYYYYYYY"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
-    </Box>
-  );
-};
-
-// Rest of the components remain the same...
 const Sidebar = ({ isOpen, onClose }) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
@@ -97,18 +31,6 @@ const Sidebar = ({ isOpen, onClose }) => {
       transform={{ base: isOpen ? "translateX(0)" : "translateX(-100%)", md: "translateX(0)" }}
       transition="transform 0.3s ease"
       zIndex={20}
-      css={{
-        '&::-webkit-scrollbar': {
-          width: '6px',
-        },
-        '&::-webkit-scrollbar-track': {
-          background: colorMode === 'light' ? 'gray.100' : 'gray.900',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          background: colorMode === 'light' ? 'gray.400' : 'gray.600',
-          borderRadius: '3px',
-        },
-      }}
     >
       <VStack spacing={4} align="stretch" minH="100%" p={5}>
         <Heading 
@@ -123,7 +45,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           {menuItems.map((item) => (
             <Button
               key={item.path}
-              as={Link}
+              as={RouterLink}
               to={item.path}
               leftIcon={item.icon}
               variant="ghost"
@@ -143,7 +65,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         </VStack>
 
         <Box mt="auto">
-          <TestAd position="sidebar" />
           <VStack spacing={4} mt={4}>
             <IconButton
               aria-label="Toggle color mode"
@@ -172,7 +93,6 @@ function Layout({ children }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { colorMode } = useColorMode();
 
-  // Effect for handling resize
   React.useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -224,10 +144,6 @@ function Layout({ children }) {
           <Box flex="1">
             {children}
           </Box>
-          
-          <Box mt={8}>
-            <TestAd position="content-bottom" />
-          </Box>
         </Flex>
       </Box>
     </Flex>
@@ -235,3 +151,4 @@ function Layout({ children }) {
 }
 
 export default Layout;
+

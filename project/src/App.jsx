@@ -10,6 +10,8 @@ import Layout from './components/Layout'
 import Sobre from './pages/Sobre'
 import Politicas from './pages/Politicas'
 import Contato from './pages/Contato'
+import DetalhesDivida from './pages/DetalhesDivida'
+import EditDivida from './pages/EditDivida'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -54,6 +56,8 @@ function App() {
         <Route path="/sobre-o-app" element={<Sobre />} />
         <Route path="/politicas-de-seguranca" element={<Politicas />} />
         <Route path="/contato" element={<Contato />} />
+        <Route path='/dividasDetalhes/:id' element={<DetalhesDivida />} />
+        <Route path="/editar/:id" element={<EditDivida />} />
       </Routes>
     </Box>
   )

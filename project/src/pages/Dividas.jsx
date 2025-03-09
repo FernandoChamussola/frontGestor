@@ -27,6 +27,7 @@ import {
 } from '@chakra-ui/react'
 import { FiDownload } from 'react-icons/fi'
 import { getDividas, registrarPagamento, downloadPDF } from '../services/api'
+import { Link } from 'react-router-dom';
 
 // Componente do anúncio em tela cheia
 const FullScreenAd = ({ isOpen, onClose, onAdComplete }) => {
@@ -234,6 +235,9 @@ function Dividas() {
     }
   }
 
+ 
+ 
+ 
   return (
     <Box>
       <HStack justify="space-between" mb={6}>
@@ -274,14 +278,30 @@ function Dividas() {
                 <Button
                   size="sm"
                   colorScheme="green"
-                  onClick={() => {
-                    setSelectedDivida(divida)
-                    onOpen()
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDivida(divida);
+                    onOpen();
                   }}
                 >
                   Registrar Pagamento
                 </Button>
               </Td>
+              <td>
+                <Link to={`/dividasDetalhes/${divida.id}`}>
+                <Button variant="link" size="sm" colorScheme="blue">
+                  Detalhes
+                </Button>
+                </Link>
+              </td>
+
+              <td>
+                <Link to={`/editar/${divida.id}`}>
+                <Button variant="link" size="sm" colorScheme="orange">
+                  Editar
+                </Button>
+                </Link>
+              </td>
             </Tr>
           ))}
         </Tbody>
