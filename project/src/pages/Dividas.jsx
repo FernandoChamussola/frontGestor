@@ -21,117 +21,13 @@ import {
   FormLabel,
   Input,
   useToast,
-  Center,
-  VStack,
-  Text,
+  Switch,
+  Flex,
+  Badge,
 } from '@chakra-ui/react'
 import { FiDownload } from 'react-icons/fi'
 import { getDividas, registrarPagamento, downloadPDF } from '../services/api'
 import { Link } from 'react-router-dom';
-
-// Componente do anúncio em tela cheia
-const FullScreenAd = ({ isOpen, onClose, onAdComplete }) => {
-  const [adStatus, setAdStatus] = useState('Carregando anúncio...');
-  const [countdown, setCountdown] = useState(5);
-  const isDevelopment = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
-
-  useEffect(() => {
-    if (isOpen) {
-      // Iniciar contagem regressiva
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      // Limpar timer
-      return () => clearInterval(timer);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (countdown === 0) {
-      setTimeout(onAdComplete, 1000);
-    }
-  }, [countdown, onAdComplete]);
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full">
-      <ModalOverlay />
-      <ModalContent>
-        <Center minH="100vh" position="relative">
-          <Box
-            w="100%"
-            h="100vh"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            {isDevelopment ? (
-              // Placeholder para desenvolvimento
-              <VStack spacing={4}>
-                <Box
-                  w="80%"
-                  maxW="800px"
-                  h="400px"
-                  border="2px dashed"
-                  borderColor="blue.400"
-                  borderRadius="md"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  flexDirection="column"
-                  p={4}
-                >
-                  <Text fontSize="xl">📢 Anúncio em Tela Cheia</Text>
-                  <Text>Ambiente de desenvolvimento</Text>
-                  <Text mt={4}>Aguarde {countdown} segundos...</Text>
-                </Box>
-              </VStack>
-            ) : (
-              // Anúncio real para produção
-              <Box
-                w="80%"
-                maxW="800px"
-                h="400px"
-                position="relative"
-              >
-                <ins
-                  className="adsbygoogle"
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    height: '100%',
-                  }}
-                  data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                  data-ad-slot="YYYYYYYYYYYY"
-                  data-ad-format="auto"
-                  data-full-width-responsive="true"
-                />
-                <Text 
-                  position="absolute" 
-                  bottom="4" 
-                  right="4" 
-                  bg="blackAlpha.700" 
-                  color="white" 
-                  px={3} 
-                  py={1} 
-                  borderRadius="md"
-                >
-                  {countdown}s
-                </Text>
-              </Box>
-            )}
-          </Box>
-        </Center>
-      </ModalContent>
-    </Modal>
-  );
-};
 
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-MZ', {
@@ -146,21 +42,19 @@ function formatDate(dateString) {
 
 function Dividas() {
   const [dividas, setDividas] = useState([])
+  const [filteredDividas, setFilteredDividas] = useState([])
   const [selectedDivida, setSelectedDivida] = useState(null)
   const [valorPagamento, setValorPagamento] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mostrarQuitadas, setMostrarQuitadas] = useState(true)
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { 
-    isOpen: isAdOpen, 
-    onOpen: onAdOpen, 
-    onClose: onAdClose 
-  } = useDisclosure()
   const toast = useToast()
 
   const fetchDividas = async () => {
     try {
       const data = await getDividas()
       setDividas(data)
+      applyFilter(data, mostrarQuitadas)
     } catch (error) {
       toast({
         title: 'Erro ao carregar dívidas',
@@ -171,9 +65,28 @@ function Dividas() {
     }
   }
 
+  const applyFilter = (data, showPaid) => {
+    if (showPaid) {
+      setFilteredDividas(data)
+    } else {
+      // Filtra apenas as dívidas não quitadas (assumindo que 'QUITADA' é o status para dívidas pagas)
+      setFilteredDividas(data.filter(divida => divida.status !== 'QUITADA'))
+    }
+  }
+
+  const isOverdue = (dataVencimento) => {
+    const today = new Date();
+    const vencimento = new Date(dataVencimento);
+    return vencimento < today;
+  }
+
   useEffect(() => {
     fetchDividas()
   }, [])
+
+  useEffect(() => {
+    applyFilter(dividas, mostrarQuitadas)
+  }, [mostrarQuitadas])
 
   const handlePagamento = async () => {
     if (!selectedDivida || !valorPagamento) return
@@ -216,13 +129,6 @@ function Dividas() {
   }
 
   const handleDownloadPDF = async () => {
-    // Abrir o anúncio primeiro
-    onAdOpen();
-  }
-
-  const handleAdComplete = async () => {
-    // Fechar o anúncio e iniciar o download
-    onAdClose();
     try {
       await downloadPDF();
     } catch (error) {
@@ -235,9 +141,6 @@ function Dividas() {
     }
   }
 
- 
- 
- 
   return (
     <Box>
       <HStack justify="space-between" mb={6}>
@@ -250,6 +153,20 @@ function Dividas() {
           Exportar PDF
         </Button>
       </HStack>
+
+      <Flex justifyContent="flex-end" mb={4}>
+        <FormControl display="flex" alignItems="center" width="auto">
+          <FormLabel htmlFor="mostrar-quitadas" mb="0">
+            Mostrar dívidas quitadas
+          </FormLabel>
+          <Switch 
+            id="mostrar-quitadas" 
+            isChecked={mostrarQuitadas} 
+            onChange={() => setMostrarQuitadas(!mostrarQuitadas)}
+            colorScheme="green"
+          />
+        </FormControl>
+      </Flex>
 
       <Table variant="simple">
         <Thead>
@@ -264,46 +181,69 @@ function Dividas() {
           </Tr>
         </Thead>
         <Tbody>
-          {dividas.map((divida) => (
-            <Tr key={divida.id}>
-              <Td>{divida.devedor.nome}</Td>
-              <Td>{formatCurrency(divida.valorInicial)}</Td>
-              <Td>
-                {formatCurrency(divida.valorAtual + divida.valorAtual * (divida.taxaJuros / 100))}
-              </Td>
-              <Td>{formatCurrency(divida.valorPago)}</Td>
-              <Td>{formatDate(divida.dataVencimento)}</Td>
-              <Td>{divida.status}</Td>
-              <Td>
-                <Button
-                  size="sm"
-                  colorScheme="green"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedDivida(divida);
-                    onOpen();
-                  }}
-                >
-                  Registrar Pagamento
-                </Button>
-              </Td>
-              <td>
-                <Link to={`/dividasDetalhes/${divida.id}`}>
-                <Button variant="link" size="sm" colorScheme="blue">
-                  Detalhes
-                </Button>
-                </Link>
-              </td>
+          {filteredDividas.map((divida) => {
+            const overdueDebt = isOverdue(divida.dataVencimento) && divida.status !== 'QUITADA';
+            
+            return (
+              <Tr 
+                key={divida.id} 
+                backgroundColor={overdueDebt ? 'red.50' : 'inherit'}
+              >
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {divida.devedor.nome}
+                </Td>
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {formatCurrency(divida.valorInicial)}
+                </Td>
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {formatCurrency(divida.valorAtual + divida.valorAtual * (divida.taxaJuros / 100))}
+                </Td>
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {formatCurrency(divida.valorPago)}
+                </Td>
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {formatDate(divida.dataVencimento)}
+                  {overdueDebt && (
+                    <Badge ml={2} colorScheme="red">
+                      Em atraso
+                    </Badge>
+                  )}
+                </Td>
+                <Td color={overdueDebt ? 'red.600' : 'inherit'}>
+                  {divida.status}
+                </Td>
+                <Td>
+                  <Button
+                    size="sm"
+                    colorScheme={overdueDebt ? "red" : "green"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDivida(divida);
+                      onOpen();
+                    }}
+                    isDisabled={divida.status === 'QUITADA'}
+                  >
+                    Registrar Pagamento
+                  </Button>
+                </Td>
+                <td>
+                  <Link to={`/dividasDetalhes/${divida.id}`}>
+                  <Button variant="link" size="sm" colorScheme="blue">
+                    Detalhes
+                  </Button>
+                  </Link>
+                </td>
 
-              <td>
-                <Link to={`/editar/${divida.id}`}>
-                <Button variant="link" size="sm" colorScheme="orange">
-                  Editar
-                </Button>
-                </Link>
-              </td>
-            </Tr>
-          ))}
+                <td>
+                  <Link to={`/editar/${divida.id}`}>
+                  <Button variant="link" size="sm" colorScheme="orange">
+                    Editar
+                  </Button>
+                  </Link>
+                </td>
+              </Tr>
+            );
+          })}
         </Tbody>
       </Table>
 
@@ -335,12 +275,6 @@ function Dividas() {
           </ModalBody>
         </ModalContent>
       </Modal>
-
-      <FullScreenAd 
-        isOpen={isAdOpen} 
-        onClose={onAdClose}
-        onAdComplete={handleAdComplete}
-      />
     </Box>
   )
 }

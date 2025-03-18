@@ -12,6 +12,7 @@ import {
   Link,
   useToast,
   Container,
+  Spinner,
 } from '@chakra-ui/react'
 import { login } from '../services/api'
 
@@ -21,11 +22,11 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const toast = useToast()
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-
+    
     try {
       await login(email, senha)
       navigate('/')
@@ -41,7 +42,7 @@ function Login() {
       setLoading(false)
     }
   }
-
+  
   return (
     <Container maxW="container.sm" py={20}>
       <Box p={8} borderWidth={1} borderRadius={8} boxShadow="lg">
@@ -56,29 +57,34 @@ function Login() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  isDisabled={loading}
                 />
               </FormControl>
-
+              
               <FormControl isRequired>
                 <FormLabel>Senha</FormLabel>
                 <Input
                   type="password"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
+                  isDisabled={loading}
                 />
               </FormControl>
-
+              
               <Button
                 type="submit"
                 colorScheme="green"
                 width="full"
-                
+                isLoading={loading}
+                loadingText="Entrando..."
+                disabled={loading}
               >
+                {loading ? <Spinner size="sm" color="white" mr={2} /> : null}
                 Entrar
               </Button>
             </VStack>
           </form>
-
+          
           <Text textAlign="center">
             Não tem uma conta?{' '}
             <Link as={RouterLink} to="/register" color="green.500">
